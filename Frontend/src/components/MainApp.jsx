@@ -26,7 +26,7 @@ import "highlight.js/styles/github-dark.css"; // For Markdown code blocks
 import axios from 'axios';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import CodeHistory from './CodeHistory'; // Import the new component
 import toast from 'react-hot-toast';
 import '../App.css';
@@ -89,11 +89,23 @@ function MainApp() {
       createdAt: serverTimestamp()
     });
 
-    toast.promise(promise, {
-       loading: 'Saving your code...',
-       success: <b>Code saved to your history!</b>,
-       error: <b>Could not save your code.</b>,
-     });
+    toast.promise(
+      promise,
+      {
+        loading: 'Saving your code...',
+        success: <b>Code saved to your history!</b>,
+        error: <b>Could not save your code.</b>,
+      },
+      {
+        // Auto-dismiss the toast after a few seconds
+        success: {
+          duration: 3000,
+        },
+        error: {
+          duration: 4000,
+        },
+      }
+    );
   };
 
   const reviewCode = async () => {
@@ -141,14 +153,14 @@ function MainApp() {
       const feedback = 'Copied!';
       if (type === 'code') setCopyCodeFeedback(feedback);
       else setCopyReviewFeedback(feedback);
-      toast.success('Copied to clipboard!');
+      toast.success('Copied to clipboard!', { duration: 2000 });
       setTimeout(() => {
         if (type === 'code') setCopyCodeFeedback('Copy Code');
         else setCopyReviewFeedback('Copy Review');
       }, 2000);
     }).catch(err => {
       console.error('Failed to copy text: ', err);
-      toast.error('Failed to copy to clipboard.');
+      toast.error('Failed to copy to clipboard.', { duration: 3000 });
     });
   };
 

@@ -1,12 +1,8 @@
-import React, { useContext, useState, useEffect, createContext } from 'react';
-import { auth } from '../firebase'; // Import the auth object from our firebase.js
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { auth } from '../firebase';
 import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-
-const AuthContext = createContext();
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
+import { AuthContext } from './AuthContext';
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
@@ -47,3 +43,7 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};

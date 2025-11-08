@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth';
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import MainApp from './components/MainApp';
@@ -19,21 +19,18 @@ function App() {
     // This is the view for logged-out users
     const AuthView = () => (
         <div className="auth-page">
-            <header className="app-header" style={{ justifyContent: 'center' }}>
-                <div>
-                    <h1>DocQuery</h1>
-                    <p>Your AI Code Review Assistant</p>
-                </div>
-            </header>
             <div className="auth-wrapper">
+                <header className="app-header" style={{ justifyContent: 'center', borderBottom: 'none' }}>
+                    <div>
+                        <h1>DocQuery</h1>
+                        <p>Your AI Code Review Assistant</p>
+                    </div>
+                </header>
                 {isSigningUp ? <SignUp /> : <SignIn />}
                 <button onClick={() => setIsSigningUp(!isSigningUp)} className="toggle-auth-button">
                     {isSigningUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
                 </button>
             </div>
-            <footer className="app-footer">
-                <p>&copy; {new Date().getFullYear()} DocQuery. Crafted with AI.</p>
-            </footer>
         </div>
     );
 
