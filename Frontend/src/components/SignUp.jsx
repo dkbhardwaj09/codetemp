@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
 const SignUp = () => {
@@ -13,12 +13,11 @@ const SignUp = () => {
     setLoading(true);
     try {
       await signup(email, password);
-      toast.success('Welcome aboard, matey! Your account is ready.');
-      // The onAuthStateChanged listener in AuthContext will handle the UI change
+      toast.success('Welcome! Your account has been created.');
     } catch (err) {
       let errorMessage = 'Failed to create account.';
       if (err.code === 'auth/email-already-in-use') {
-        errorMessage = 'This email is already in use by another pirate.';
+        errorMessage = 'This email is already in use.';
       } else if (err.code === 'auth/weak-password') {
         errorMessage = 'Your password must be at least 6 characters long.';
       }
@@ -29,11 +28,11 @@ const SignUp = () => {
   };
 
   return (
-    <div className="auth-form-container">
+    <div className="new-auth-form-container">
       <h2>Create Your Account</h2>
-      <p>Join the crew and save your code reviews!</p>
-      <form onSubmit={handleSignUp} className="auth-form">
-        <div className="form-group">
+      <p>Join us and start reviewing your code.</p>
+      <form onSubmit={handleSignUp} className="new-auth-form">
+        <div className="new-form-group">
           <label htmlFor="signup-email">Email Address</label>
           <input
             type="email"
@@ -42,10 +41,10 @@ const SignUp = () => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="captain@sea.com"
             required
-            className="auth-input"
+            className="new-auth-input"
           />
         </div>
-        <div className="form-group">
+        <div className="new-form-group">
           <label htmlFor="signup-password">Password</label>
           <input
             type="password"
@@ -55,10 +54,10 @@ const SignUp = () => {
             placeholder="At least 6 characters"
             required
             minLength="6"
-            className="auth-input"
+            className="new-auth-input"
           />
         </div>
-        <button type="submit" className="auth-button" disabled={loading}>
+        <button type="submit" className="new-auth-button" disabled={loading}>
           {loading ? 'Creating Account...' : 'Sign Up'}
         </button>
       </form>

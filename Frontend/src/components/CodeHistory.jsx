@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 const CodeHistory = ({ onLoadCode }) => {
@@ -48,7 +49,7 @@ const CodeHistory = ({ onLoadCode }) => {
       <h4>Code History</h4>
       <div className="history-list-wrapper">
         {snippets.length === 0 ? (
-            <p className="empty-history">You haven't saved any code yet. Use the "Save Code" button to keep a snippet!</p>
+            <p className="empty-history">You haven&apos;t saved any code yet. Use the &quot;Save Code&quot; button to keep a snippet!</p>
         ) : (
             <ul className="history-list">
             {snippets.map((snippet) => (
@@ -67,6 +68,10 @@ const CodeHistory = ({ onLoadCode }) => {
       </div>
     </div>
   );
+};
+
+CodeHistory.propTypes = {
+  onLoadCode: PropTypes.func.isRequired,
 };
 
 export default CodeHistory;
