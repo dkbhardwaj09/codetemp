@@ -94,7 +94,7 @@ ${code}
 
   try {
     console.log(`Requesting review for ${sanitizedLanguage} code...`);
-    const result = await model.generateContent(promptWithLanguageContext);
+    return await attemptModel(primaryModelName,promptWithLanguageContext);
     } catch (primaryError) {
         console.error(`Primary model (${primaryModelName}) failed:`, primaryError.message);
         console.log("Attempting fallback to secondary model...");
@@ -104,10 +104,10 @@ ${code}
         } catch (secondaryError) {
             console.error(`Secondary model (${secondaryModelName}) also failed:`, secondaryError.message);
             if (secondaryError.message.includes("API key not valid")) {
-                throw new Error("AI service API key is invalid or missing. Please check server configuration.");
+                throw new AppError("AI service API key is invalid or missing. Please check server configuration.", 500);
             }
             // Combine errors or choose the most relevant one
-            throw new Error(`AI service failed to generate review with both primary and secondary models. Last error: ${secondaryError.message}`);
+            throw new AppError(`AI service failed to generate review with both primary and secondary models. Last error: ${secondaryError.message}`, 500);
         }
     }
 }
