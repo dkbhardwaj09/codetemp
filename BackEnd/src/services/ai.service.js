@@ -9,10 +9,10 @@ if (!process.env.GOOGLE_GEMINI_KEY) {
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_KEY);
 
 // It's good practice to define the model configuration separately for clarity
-const modelConfig = {
-  model: process.env.GEMINI_MODEL || 'gemini-1.5-flash', // Use environment variable or fallback
-  // Ensure this model is available to your API key
-  systemInstruction: `
+const primaryModelName = "gemini-2.5-flash";
+const secondaryModelName = "gemini-2.5-pro";
+
+const systemInstruction = `
         Here’s a solid system instruction for your AI code reviewer:
 
         AI System Instruction: Senior Code Reviewer (7+ Years of Experience)
@@ -73,14 +73,15 @@ const modelConfig = {
         Final Note:
 
         Your mission is to ensure every piece of code follows high standards. Your reviews should empower developers to write better, more efficient, and scalable code while keeping performance, security, and maintainability in mind, all within the context of the specified programming language.
-    `,
-};
-
-const model = genAI.getGenerativeModel(modelConfig);
+    `;
+async function attemptModel(modelName, prompt) {
+    const model = genAI.getGenerativeModel({ model: modelName, systemInstruction });
+    console.log(`Attempting to generate content with model: ${modelName}`);
+    const result = await model.generateContentStream(prompt);
+    return result.stream;
+}
 
 async function generateReviewForCode(code, language = 'unknown') {
-  // Sanitize language string to prevent injection if it were used in a more complex way later.
-  // For current use (text in prompt), it's less critical but good practice.
   const sanitizedLanguage = language.replace(/[^a-zA-Z0-9+#-]/g, ''); // Allow common language chars like C++, C#
 
   const promptWithLanguageContext = `
@@ -94,22 +95,21 @@ ${code}
   try {
     console.log(`Requesting review for ${sanitizedLanguage} code...`);
     const result = await model.generateContent(promptWithLanguageContext);
+    } catch (primaryError) {
+        console.error(`Primary model (${primaryModelName}) failed:`, primaryError.message);
+        console.log("Attempting fallback to secondary model...");
 
-    // It's good to check if response and text() exist
-    if (result && result.response && typeof result.response.text === 'function') {
-      const reviewText = result.response.text();
-      console.log('Review generated successfully.');
-      return reviewText;
+        try {
+            return await attemptModel(secondaryModelName, promptWithLanguageContext);
+        } catch (secondaryError) {
+            console.error(`Secondary model (${secondaryModelName}) also failed:`, secondaryError.message);
+            if (secondaryError.message.includes("API key not valid")) {
+                throw new Error("AI service API key is invalid or missing. Please check server configuration.");
+            }
+            // Combine errors or choose the most relevant one
+            throw new Error(`AI service failed to generate review with both primary and secondary models. Last error: ${secondaryError.message}`);
+        }
     }
-    throw new AppError('Failed to get a valid response from the AI model.', 500);
-  } catch (error) {
-    console.error(`Error generating content with AI model for ${sanitizedLanguage} code:`, error);
-    // Check for specific API errors if the SDK provides them, e.g., error.status or error.code
-    if (error.message.includes('API key not valid')) {
-      throw new AppError('AI service API key is invalid or missing. Please check server configuration.', 500);
-    }
-    throw new AppError(`AI service failed to generate review. ${error.message}`, 500);
-  }
 }
 
 module.exports = generateReviewForCode;
